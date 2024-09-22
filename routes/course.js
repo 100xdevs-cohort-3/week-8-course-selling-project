@@ -8,6 +8,8 @@ courseRouter.post("/purchase", function(req, res) {
     })
 })
 
+
+
 courseRouter.get("/preview", function(req, res) {
     res.json({
         message: "course preview endpoint"
