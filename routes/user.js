@@ -5,6 +5,9 @@ const  { JWT_USER_PASSWORD } = require("../config");
 
 const userRouter = Router();
 
+
+
+
 userRouter.post("/signup", async function(req, res) {
     const { email, password, firstName, lastName } = req.body; // TODO: adding zod validation
     // TODO: hash the password so plaintext pw is not stored in the DB
