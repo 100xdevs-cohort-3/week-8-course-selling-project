@@ -13,7 +13,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/course", courseRouter);
 
 async function main() {
-    await mongoose.connect("mongodb+srv://100xdevs:WvaTca0509mb90YX@cluster0.ossjd.mongodb.net/harkirat-course-app")
+    await mongoose.connect("")
     app.listen(3000);
     console.log("listening on port 3000")
 }
