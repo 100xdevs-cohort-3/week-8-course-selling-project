@@ -13,7 +13,10 @@ interface User {
 export default function Page() {
   const [userDetails, setUserDetails] = useState<User>();
   const [purchasedCourses, setPurchasedCourses] = useState<any>([]);
-  const token = localStorage.getItem("token");
+  let token = null;
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem("token");
+  }
   const apiUrl = process.env.URL;
 
   useEffect(() => {

@@ -34,7 +34,9 @@ export default function SignInComponent() {
       );
       console.log(response);
       if (response.status === 200) {
-        localStorage.setItem("token", response.data.token);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", response.data.token);
+        }
         toast({
           title: "Sign in successful",
           description: "You have successfully signed in",

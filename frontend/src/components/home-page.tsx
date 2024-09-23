@@ -76,12 +76,16 @@ export function HomePageComponent() {
   }, [token, adminToken, apiUrl]);
 
   const handleSignout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/signin";
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      window.location.href = "/signin";
+    }
   };
   const handleAdminSignout = () => {
-    localStorage.removeItem("AdminToken");
-    window.location.href = "/admin/signin";
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("AdminToken");
+      window.location.href = "/admin/signin";
+    }
   };
 
   return (

@@ -43,14 +43,24 @@ export default function CourseCard({
 }: CourseCardProps) {
   const [isPurchased, setIsPurchased] = useState(false);
   const { toast } = useToast();
-  const token = localStorage.getItem("token");
+  let token = null;
+
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem("token");
+  }
+
   const apiUrl = process.env.URL;
   const data = useMemo(() => {
     return {
       courseId: id,
     };
   }, [id]);
-  const adminToken = localStorage.getItem("AdminToken");
+
+  let adminToken = null;
+
+  if (typeof window !== "undefined") {
+    adminToken = localStorage.getItem("AdminToken");
+  }
 
   useEffect(() => {
     const checkIfAlreadyPurchased = async () =>

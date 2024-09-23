@@ -34,7 +34,9 @@ export default function AdminSignIn() {
       );
       console.log(response);
       if (response.status === 200) {
-        localStorage.setItem("AdminToken", response.data.token);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("AdminToken", response.data.token);
+        }
         toast({
           title: "Admin Sign in successful",
           description: "You have successfully signed in as admin",

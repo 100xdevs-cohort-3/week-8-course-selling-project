@@ -43,7 +43,11 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const apiUrl = process.env.URL;
 
-  const adminToken = localStorage.getItem("AdminToken");
+  let adminToken = null;
+  if (typeof window !== "undefined") {
+    adminToken = localStorage.getItem("AdminToken");
+  }
+
   useEffect(() => {
     if (!adminToken) {
       window.location.href = "/admin/signin";
