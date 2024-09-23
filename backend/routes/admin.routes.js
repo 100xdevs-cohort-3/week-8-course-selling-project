@@ -105,7 +105,7 @@ adminRouter.route("/signin").post(async (req, res) => {
         res.cookie("auth_token", authToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-          sameSite: "Strict", // Helps mitigate CSRF attacks
+          sameSite: "none", // Helps mitigate CSRF attacks
           maxAge: 3600000, // 1 hour
         });
         res.status(200).json({
