@@ -99,7 +99,7 @@ adminRouter.route("/signin").post(async (req, res) => {
       } else {
         const token = jwt.sign("skjr34897r54", process.env.JWT_SECRET);
         const authToken = jwt.sign(
-          { userId: user._id },
+          { userId: admin._id },
           process.env.JWT_SECRET
         );
         res.cookie("auth_token", authToken, {

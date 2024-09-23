@@ -41,6 +41,7 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const apiUrl = process.env.URL;
 
   const adminToken = localStorage.getItem("AdminToken");
   useEffect(() => {
@@ -53,7 +54,8 @@ export default function AdminDashboard() {
     const getAdminDetails = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/admin/getAdminDetails",
+          `${apiUrl}/admin/getAdminDetails` ||
+            "http://localhost:8000/admin/getAdminDetails",
           {
             withCredentials: true,
           }
@@ -67,13 +69,14 @@ export default function AdminDashboard() {
     if (adminToken) {
       getAdminDetails();
     }
-  }, [adminToken]);
+  }, [adminToken, apiUrl]);
 
   useEffect(() => {
     const getCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/admin/getAdminCourses",
+          `${apiUrl}/admin/getAdminCourses` ||
+            "http://localhost:8000/admin/getAdminCourses",
           {
             withCredentials: true,
           }
@@ -88,7 +91,7 @@ export default function AdminDashboard() {
     if (adminToken) {
       getCourses();
     }
-  }, [adminToken]);
+  }, [adminToken, apiUrl]);
 
   const submitForm = async () => {
     setIsSubmitting(true);
@@ -109,9 +112,14 @@ export default function AdminDashboard() {
     }
 
     await axios
-      .post("http://localhost:8000/admin/createCourse", formData, {
-        withCredentials: true,
-      })
+      .post(
+        `${apiUrl}/admin/createCourse` ||
+          "http://localhost:8000/admin/createCourse",
+        formData,
+        {
+          withCredentials: true,
+        }
+      )
       .then((res) => {
         setIsSubmitting(false);
         toast({

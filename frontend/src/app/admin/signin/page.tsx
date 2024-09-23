@@ -12,6 +12,7 @@ export default function AdminSignIn() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const apiUrl = process.env.URL;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
@@ -21,7 +22,8 @@ export default function AdminSignIn() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/admin/signin",
+        `${apiUrl}/admin/signin` || "http://localhost:8000/admin/signin",
+
         {
           email: email.value,
           password: password.value,

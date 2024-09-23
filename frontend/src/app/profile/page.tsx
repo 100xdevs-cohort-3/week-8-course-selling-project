@@ -14,13 +14,18 @@ export default function Page() {
   const [userDetails, setUserDetails] = useState<User>();
   const [purchasedCourses, setPurchasedCourses] = useState<any>([]);
   const token = localStorage.getItem("token");
+  const apiUrl = process.env.URL;
 
   useEffect(() => {
     if (token) {
       axios
-        .get("http://localhost:8000/user/getUserDetails", {
-          withCredentials: true,
-        })
+        .get(
+          `${apiUrl}/user/getUserDetails` ||
+            "http://localhost:8000/user/getUserDetails",
+          {
+            withCredentials: true,
+          }
+        )
         .then((res) => {
           setUserDetails(res.data.user);
         })
@@ -28,14 +33,18 @@ export default function Page() {
           console.error("Error fetching user details:", err);
         });
     }
-  }, [token]);
+  }, [token, apiUrl]);
 
   useEffect(() => {
     if (userDetails?.username) {
       axios
-        .get(`http://localhost:8000/user/getAllPurchasedCourses`, {
-          withCredentials: true,
-        })
+        .get(
+          `${apiUrl}/user/getAllPurchasedCourses` ||
+            "http://localhost:8000/user/getAllPurchasedCourses",
+          {
+            withCredentials: true,
+          }
+        )
         .then((res) => {
           setPurchasedCourses(res.data.data);
         })
@@ -43,7 +52,7 @@ export default function Page() {
           console.error("Error fetching user details:", err);
         });
     }
-  }, [token, userDetails?.username]);
+  }, [token, userDetails?.username, apiUrl]);
 
   return (
     <div className='min-h-screen bg-gradient-to-t from-zinc-700 via-zinc-900 to-black px-12 pt-4'>

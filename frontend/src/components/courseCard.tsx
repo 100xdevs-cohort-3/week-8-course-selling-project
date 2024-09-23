@@ -44,6 +44,7 @@ export default function CourseCard({
   const [isPurchased, setIsPurchased] = useState(false);
   const { toast } = useToast();
   const token = localStorage.getItem("token");
+  const apiUrl = process.env.URL;
   const data = useMemo(() => {
     return {
       courseId: id,
@@ -54,9 +55,14 @@ export default function CourseCard({
   useEffect(() => {
     const checkIfAlreadyPurchased = async () =>
       await axios
-        .post(`http://localhost:8000/user/checkIfAlreadyPurchased`, data, {
-          withCredentials: true,
-        })
+        .post(
+          `${apiUrl}/user/checkIfAlreadyPurchased` ||
+            "http://localhost:8000/user/checkIfAlreadyPurchased",
+          data,
+          {
+            withCredentials: true,
+          }
+        )
         .then((res) => {
           setIsPurchased(res.data.status);
         })
@@ -66,13 +72,18 @@ export default function CourseCard({
     if (token) {
       checkIfAlreadyPurchased();
     }
-  }, [token, data]);
+  }, [token, data, apiUrl]);
 
   const handlePurchase = () => {
     axios
-      .post("http://localhost:8000/user/purchaseCourse", data, {
-        withCredentials: true,
-      })
+      .post(
+        `${apiUrl}/user/purchaseCourse` ||
+          "http://localhost:8000/user/purchaseCourse",
+        data,
+        {
+          withCredentials: true,
+        }
+      )
       .then((res) => {
         setIsPurchased(true);
       })
@@ -83,9 +94,13 @@ export default function CourseCard({
 
   const deleteCourse = async (courseId: string) => {
     axios
-      .get(`http://localhost:8000/details/deleteCourse/${courseId}`, {
-        withCredentials: true,
-      })
+      .get(
+        `${apiUrl}/details/deleteCourse/${courseId}` ||
+          "http://localhost:8000/details/deleteCourse/${courseId}",
+        {
+          withCredentials: true,
+        }
+      )
       .then((res) => {
         setIsPurchased(false);
         toast({

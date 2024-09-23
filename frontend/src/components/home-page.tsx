@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-
 import { Github, Linkedin, Twitter, User } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
@@ -30,6 +29,7 @@ export function HomePageComponent() {
   const [courses, setCourses] = useState<[Course]>();
   const [token, setToken] = useState<string | null>(null);
   const [adminToken, setAdminToken] = useState<string | null>(null);
+  const apiUrl = process.env.URL;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -44,20 +44,25 @@ export function HomePageComponent() {
   useEffect(() => {
     const getCourses = async () => {
       const res = await axios.get(
-        "http://localhost:8000/details/getAllCourses"
+        `${apiUrl}/details/getAllCourses` ||
+          "http://localhost:8000/details/getAllCourses"
       );
       setCourses(res.data.courses);
     };
 
     getCourses();
-  }, []);
+  }, [apiUrl]);
 
   useEffect(() => {
     const getUserDetails = async () => {
       await axios
-        .get("http://localhost:8000/user/getUserDetails", {
-          withCredentials: true,
-        })
+        .get(
+          `${apiUrl}/user/getUserDetails` ||
+            "http://localhost:8000/user/getUserDetails",
+          {
+            withCredentials: true,
+          }
+        )
         .then((res) => {
           setUserDetails(res.data.user);
         })
@@ -68,7 +73,7 @@ export function HomePageComponent() {
     if (token) {
       getUserDetails();
     }
-  }, [token, adminToken]);
+  }, [token, adminToken, apiUrl]);
 
   const handleSignout = () => {
     localStorage.removeItem("token");

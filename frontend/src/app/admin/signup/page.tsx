@@ -21,6 +21,7 @@ interface AxiosError {
 export default function SignUpComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const apiUrl = process.env.URL;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
@@ -30,11 +31,14 @@ export default function SignUpComponent() {
     const password = document.getElementById("password") as HTMLInputElement;
 
     try {
-      const response = await axios.post("http://localhost:8000/admin/signup", {
-        adminname: adminname.value,
-        email: email.value,
-        password: password.value,
-      });
+      const response = await axios.post(
+        `${apiUrl}/admin/signup` || "http://localhost:8000/admin/signup",
+        {
+          adminname: adminname.value,
+          email: email.value,
+          password: password.value,
+        }
+      );
       console.log(response.data.message);
       if (response.status === 201) {
         window.location.href = "/admin/signin";

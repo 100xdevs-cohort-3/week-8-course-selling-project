@@ -13,6 +13,7 @@ export default function SignInComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const apiUrl = process.env.URL;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
@@ -22,7 +23,7 @@ export default function SignInComponent() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/user/signin",
+        `${apiUrl}/user/signin` || "http://localhost:8000/user/signin",
         {
           email: email.value,
           password: password.value,
