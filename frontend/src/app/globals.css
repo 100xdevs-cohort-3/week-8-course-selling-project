@@ -26,6 +26,19 @@ body {
   }
 }
 
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 28s linear infinite;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
