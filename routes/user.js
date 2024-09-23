@@ -1,77 +1,111 @@
-const { Router } = require("express");
+const express = require("express");
 const { userModel, purchaseModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
-const  { JWT_USER_PASSWORD } = require("../config");
+const { JWT_USER_PASSWORD } = require("../config");
 const { userMiddleware } = require("../middleware/user");
+const bcrypt = require("bcrypt"); // For hashing passwords
+const { z } = require("zod"); // For validation
 
-const userRouter = Router();
+const userRouter = express.Router();
 
-userRouter.post("/signup", async function(req, res) {
-    const { email, password, firstName, lastName } = req.body; // TODO: adding zod validation
-    // TODO: hash the password so plaintext pw is not stored in the DB
+// Zod schema for validating user input
+const signupSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6), // Adjust the minimum length as needed
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+});
 
-    // TODO: Put inside a try catch block
+userRouter.post("/signup", async function (req, res) {
+  try {
+    // Validate request body
+    const { email, password, firstName, lastName } = signupSchema.parse(req.body);
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user in the database
     await userModel.create({
-        email: email,
-        password: password,
-        firstName: firstName, 
-        lastName: lastName
-    })
-    
-    res.json({
-        message: "Signup succeeded"
-    })
-})
-
-userRouter.post("/signin",async function(req, res) {
-    const { email, password } = req.body;
-
-    // TODO: ideally password should be hashed, and hence you cant compare the user provided password and the database password
-    const user = await userModel.findOne({
-        email: email,
-        password: password
-    }); //[]
-
-    if (user) {
-        const token = jwt.sign({
-            id: user._id,
-        }, JWT_USER_PASSWORD);
-
-        // Do cookie logic
-
-        res.json({
-            token: token
-        })
-    } else {
-        res.status(403).json({
-            message: "Incorrect credentials"
-        })
-    }
-})
-
-userRouter.get("/purchases", userMiddleware, async function(req, res) {
-    const userId = req.userId;
-
-    const purchases = await purchaseModel.find({
-        userId,
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
     });
 
-    let purchasedCourseIds = [];
+    res.json({
+      message: "Signup succeeded",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred during signup",
+    });
+  }
+});
 
-    for (let i = 0; i<purchases.length;i++){ 
-        purchasedCourseIds.push(purchases[i].courseId)
+userRouter.post("/signin", async function (req, res) {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await userModel.findOne({ email });
+
+    // Check if user exists and compare hashed passwords
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        JWT_USER_PASSWORD
+      );
+
+      // Cookie logic can be added here
+
+      res.json({
+        token,
+      });
+    } else {
+      res.status(403).json({
+        message: "Incorrect credentials",
+      });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred during signin",
+    });
+  }
+});
 
+userRouter.get("/purchases", userMiddleware, async function (req, res) {
+  try {
+    const userId = req.userId;
+
+    // Fetch purchases for the user
+    const purchases = await purchaseModel.find({
+      userId,
+    });
+
+    // Extract course IDs from purchases using map
+    const purchasedCourseIds = purchases.map((purchase) => purchase.courseId);
+
+    // Fetch course data for the purchased course IDs
     const coursesData = await courseModel.find({
-        _id: { $in: purchasedCourseIds }
-    })
+      _id: { $in: purchasedCourseIds },
+    });
 
     res.json({
-        purchases,
-        coursesData
-    })
-})
+      purchases,
+      coursesData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "An error occurred while fetching purchases",
+    });
+  }
+});
 
 module.exports = {
-    userRouter: userRouter
-}
+  userRouter,
+};
