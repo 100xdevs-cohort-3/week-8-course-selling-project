@@ -48,7 +48,11 @@ export default function SignInComponent() {
     } catch (err) {
       console.log(err);
       const errorMessage = "An unexpected error occurred";
-      setError(err.response?.data || errorMessage);
+
+      // Type assertion
+      const responseError = err as { response?: { data?: string } };
+
+      setError(responseError.response?.data || errorMessage);
       setIsSubmitting(false);
     }
   };
