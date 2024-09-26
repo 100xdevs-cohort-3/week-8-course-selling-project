@@ -1,23 +1,30 @@
-require('dotenv').config()
-console.log(process.env.MONGO_URL)
-const express = require("express");
-const mongoose = require("mongoose");
+import express from "express";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import { connectDB } from "./config/database.js";
 
-const { userRouter } = require("./routes/user");
-const { courseRouter } = require("./routes/course");
-const { adminRouter } = require("./routes/admin");
+import { userRouter } from "./routes/user.routes.js";
+import { adminRouter } from "./routes/admin.routes.js";
+import { courseRouter } from "./routes/courses.routes.js";
+
+dotenv.config();
+
 const app = express();
-app.use(express.json());
+const PORT = process.env.PORT || 5000;
 
+app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/course", courseRouter);
 
-async function main() {
-    await mongoose.connect(process.env.MONGO_URL)
-    app.listen(3000);
-    console.log("listening on port 3000")
-}
-
-main()
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(`Mongodb connection failed !!! ${err}`);
+  });
