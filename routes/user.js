@@ -4,47 +4,128 @@ const jwt = require("jsonwebtoken");
 const  { JWT_USER_PASSWORD } = require("../config");
 const { userMiddleware } = require("../middleware/user");
 
+// Imported the dependencies!
+const bcrypt = require('bcrypt');
+const { z } = require('zod');
+
 const userRouter = Router();
 
 userRouter.post("/signup", async function(req, res) {
-    const { email, password, firstName, lastName } = req.body; // TODO: adding zod validation
-    // TODO: hash the password so plaintext pw is not stored in the DB
 
-    // TODO: Put inside a try catch block
-    await userModel.create({
-        email: email,
-        password: password,
-        firstName: firstName, 
-        lastName: lastName
+    // First lets add the input validation here!
+
+    const requiredBody = z.object({
+        email: z.string().email(),
+        password: z.string().min(3).max(100), // Adjust the min , max length according to you!
+        firstName: z.string().min(2).max(100), // Adjust the min , max length according to you!
+        lastName: z.string().min(2).max(100) // Adjust the min , max length according to you!
     })
-    
-    res.json({
-        message: "Signup succeeded"
-    })
+
+    // parse the req.body:
+
+    const parseDataWithSuccess = requiredBody.safeParse(req.body);
+
+    // Now checking and warning whether the user/admin has given some invalid input or not
+
+    if (!parseDataWithSuccess.success) {
+        res.status(400).json({
+            msg: "Invalid Input Given",
+            errors: parseDataWithSuccess.error.issues
+        })
+        return
+    }
+
+    // uptill here input validation is done, now proceed!!
+
+    const { email, password, firstName, lastName } = req.body;
+    // hashing the password so plaintext password is not stored in the Database
+
+    // Code error handled with try catch
+
+    let errorFound = false;
+    try {
+        const hashedPassword = await bcrypt.hash(password , 10);
+        
+        await userModel.create({
+            email: email,
+            password: hashedPassword,
+            firstName: firstName, 
+            lastName: lastName
+        })
+
+    }
+    catch(e) {
+        res.status(400).json({
+            msg: "Email entered Already Exists in the Database!"
+        })
+        errorFound = true;
+    }
+
+    if (!errorFound) {
+        res.json({
+            msg: `${firstName} Successfully SignedUP to the database, as USER!`
+        })
+    }
 })
 
 userRouter.post("/signin",async function(req, res) {
-    const { email, password } = req.body;
+    // First lets add the input validation here!
 
-    // TODO: ideally password should be hashed, and hence you cant compare the user provided password and the database password
+    const requiredBody = z.object({
+        email: z.string().email(),
+        password: z.string().min(3).max(100), // Adjust the min , max length according to you!
+    })
+
+    // parse the req.body:
+
+    const parseDataWithSuccess = requiredBody.safeParse(req.body);
+
+    // Now checking and warning whether the user/admin has given some invalid input or not
+
+    if (!parseDataWithSuccess.success) {
+        res.status(400).json({
+            msg: "Invalid Input Given",
+            errors: parseDataWithSuccess.error.issues
+        })
+        return
+    }
+    // uptill here input validation is done, now proceed!!
+
+    const { email, password } = req.body;
+    
+    // First check if the user exists in our database or not!
+    
     const user = await userModel.findOne({
         email: email,
-        password: password
-    }); //[]
+    });
 
-    if (user) {
+    if (!user) {
+        res.status(401).json({
+            msg: `User Doesn't exists in our database with email: ${email}!`
+        })
+        return
+    }
+
+    const decryptedPassword = await bcrypt.compare(password , user.password);
+
+    // CHECK IF THE USERNAME AND PASSWORD MATCHED OR NOT!!
+
+
+    if (!decryptedPassword) {
+        res.status(403).json({
+            msg: "User not Found, INCORRECT CREDENTIALS!!"
+        })
+    }
+    else { // MAIN LOGIC: HERE ASSIGN THE JWT TO THE ADMIN
         const token = jwt.sign({
-            id: user._id,
-        }, JWT_USER_PASSWORD);
+            id: user._id
+        } , JWT_USER_PASSWORD);
 
         // Do cookie logic
 
         res.json({
+            msg: `${user.firstName} Successfully LoggedIN!!`,
             token: token
-        })
-    } else {
-        res.status(403).json({
-            message: "Incorrect credentials"
         })
     }
 })
